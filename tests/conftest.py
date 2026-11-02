@@ -1,6 +1,7 @@
 """Fixtures: a fake AirTouch 5 console with one AC and three zones."""
 
 from pathlib import Path
+from types import SimpleNamespace
 
 import custom_components
 
@@ -49,6 +50,7 @@ class FakeClient:
     """Stands in for Airtouch5SimpleClient; no network."""
 
     def __init__(self, host: str) -> None:
+        self._client = SimpleNamespace(_writer=None)  # no socket open
         self.ac = [AcAbility(
             ac_number=0, ac_name="AC", start_zone_number=0, zone_count=3,
             supports_mode_cool=True, supports_mode_fan=True, supports_mode_dry=True,

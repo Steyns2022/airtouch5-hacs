@@ -37,7 +37,12 @@ To go back to the built-in integration, remove it in HACS and restart.
 This copy is pinned to the `2026.10.1` code. When a Home Assistant release changes
 the built-in `airtouch5` integration, diff it against `custom_components/airtouch5/`
 and carry the changes over. The fork's own additions are `binary_sensor.py`,
-`sensor.py`, the `PLATFORMS` list in `__init__.py`, `manifest.json` and `translations/`.
+`sensor.py`, the `PLATFORMS` list and the setup error handling in `__init__.py`,
+`manifest.json` and `translations/`.
+
+Core only retries setup on a timeout, so a console that is refusing connections or
+off the network needs a manual reload. This fork retries on any connection failure
+and closes any socket a failed attempt left open.
 
 ## Tests
 

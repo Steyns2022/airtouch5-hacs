@@ -28,8 +28,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: Airtouch5ConfigEntry) ->
     # Connect to the API
     try:
         await client.connect_and_stay_connected()
-    except TimeoutError as t:
-        raise ConfigEntryNotReady from t
+    except Exception as err:
+        # Fork: core only retries on TimeoutError, so a refused or unreachable
+        # console needed a manual reload. The library also raises a bare
+        # Exception if the console hangs up mid-setup, so catch everything.
+        # Close any open socket too, or each retry leaves a connection behind.
+        # This reaches into the inner client because neither disconnect() is
+        # safe here: the simple client's _connection_task only exists after
+        # setup succeeds, and the inner client's _reader_task after it connects.
+        if client._client._writer is not None:  # noqa: SLF001
+            await client._client.disconnect()  # noqa: SLF001
+        raise ConfigEntryNotReady(f"Can't connect to {host}: {err!r}") from err
 
     # Store an API object for your platforms to access
     entry.runtime_data = client
